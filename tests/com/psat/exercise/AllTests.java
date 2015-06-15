@@ -9,7 +9,7 @@ import org.junit.runners.Suite.SuiteClasses;
  * @date 14/06/2015 21:37:50
  */
 @RunWith(Suite.class)
-@SuiteClasses({ NothingTest.class })
+@SuiteClasses({ ResourceSchedulerTest.class })
 public class AllTests {
 
 }
