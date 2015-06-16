@@ -44,7 +44,7 @@ public class ConcreteMessage implements Message {
 		// inform the scheduler that the message has finished
 		// meaning that the resource is free to take another message if
 		// available
-		System.out.println("Message Completed");
+		System.out.println("Message Completed: " + toString());
 		scheduler.putResourceIdle();
 	}
 
@@ -54,5 +54,10 @@ public class ConcreteMessage implements Message {
 
 	public String getContent() {
 		return this.content;
+	}
+
+	@Override
+	public String toString() {
+		return "{'groupID':'" + groupID + "', 'content':'" + content + "'}";
 	}
 }

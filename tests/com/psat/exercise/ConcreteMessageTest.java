@@ -48,7 +48,7 @@ public class ConcreteMessageTest {
 	 * @throws NullPointerException
 	 */
 	@Test
-	public void testConcreteMessageCreationWithResourceScheduler() throws NullPointerException {
+	public void testConcreteMessageCreationWithNoNull() throws NullPointerException {
 		ResourceScheduler scheduler = new ResourceScheduler(3);
 		new ConcreteMessage(scheduler, "group1", "a message");
 	}
