@@ -1,7 +1,14 @@
 package com.psat.exercise;
 
+import java.util.LinkedList;
+import java.util.List;
+
 /**
- * @author Paulo Teixeira
+ * This class is responsible for scheduling messages that are to be sent to the
+ * gateway, apply some prioritisation strategy and for managing the
+ * assigned resources.
+ *
+ * @author Sérgio Teixeira
  * @date 15/06/2015 22:40:04
  */
 public class ResourceScheduler {
@@ -9,7 +16,7 @@ public class ResourceScheduler {
 	/**
 	 * Counter for keeping the currently assigned resources
 	 */
-	private int	assignedResources;
+	private int				assignedResources;
 
 	/**
 	 * Counter for keeping track of currently working resources, i.e, not idle
@@ -18,8 +25,12 @@ public class ResourceScheduler {
 	 * {@link #putResourceWorking()} and {@link #putResourceIdle()} methods to
 	 * modify this attribute.
 	 */
-	private int	workingResources;	// setter for this attribute was left
-									// unimplemented - should use re
+	private int				workingResources;
+
+	/**
+	 * List of {@link Message} objects to be scheduled for processing
+	 */
+	private List<Message>	messages;
 
 	/**
 	 * Default constructor. This will create an instance with assigned resources
@@ -36,7 +47,10 @@ public class ResourceScheduler {
 	 * @param resources
 	 */
 	public ResourceScheduler(int resources) {
+		messages = new LinkedList<Message>();
 		assignedResources = resources;
+		// explicitly initialise to 0
+		workingResources = 0;
 	}
 
 	public int getAssignedResources() {
@@ -79,6 +93,32 @@ public class ResourceScheduler {
 		}
 
 		return assignedResources - workingResources;
+	}
+
+	/**
+	 * Schedule the messages to be sent to the gateway to be processed by idle
+	 * resources
+	 *
+	 * @param messages
+	 */
+	public void scheduleMessages(List<Message> messages) {
+		this.messages.addAll(messages);
+	}
+
+	/**
+	 * Schedule on message to be sent to the gateway to be processed by idle
+	 *
+	 * @param message
+	 */
+	public void scheduleMessage(Message message) {
+		this.messages.add(message);
+	}
+
+	/**
+	 * @return the list of messages to be processed
+	 */
+	public List<Message> getMessages() {
+		return messages;
 	}
 
 	public static void main(String[] args) {

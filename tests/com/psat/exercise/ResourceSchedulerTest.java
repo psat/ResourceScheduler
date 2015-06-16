@@ -2,9 +2,14 @@ package com.psat.exercise;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import org.junit.Test;
 
 /**
+ * Class to test {@link ResourceScheduler} class
+ *
  * @author Sérgio Teixeira
  * @date 14/06/2015 21:37:02
  */
@@ -46,6 +51,7 @@ public class ResourceSchedulerTest {
 	 * Test resources set to be idle. The number of idle resources must be equal
 	 * or higher that 0
 	 */
+	@Test
 	public void testResourceSetToIdle() {
 		ResourceScheduler scheduler = new ResourceScheduler(3);
 		// test setting resources to idle when there are no (0) working
@@ -59,6 +65,61 @@ public class ResourceSchedulerTest {
 		assertEquals(1, scheduler.putResourceIdle());
 		scheduler.putResourceIdle();
 		assertEquals(1, scheduler.getWorkingResources());
-		assertEquals(0, scheduler.putResourceIdle());
+		// now should be at the initial state
+		assertEquals(3, scheduler.putResourceIdle());
+		assertEquals(0, scheduler.getWorkingResources());
+	}
+
+	/**
+	 * Test that the ResourceScheduler is created with an empty list of
+	 * {@link Message} objects
+	 */
+	@Test
+	public void testEmptyListMessagesScheduling() {
+		ResourceScheduler scheduler = new ResourceScheduler();
+		assertEquals(new LinkedList<Message>(), scheduler.getMessages());
+
+		ResourceScheduler multiResourcesScheduler = new ResourceScheduler(3);
+		assertEquals(new LinkedList<Message>(), multiResourcesScheduler.getMessages());
+	}
+
+	/**
+	 * Test messages being schedule with the ResourceScheduler, basically test
+	 * that a group of messages or message are
+	 * set to the instance of ResourceScheduler
+	 */
+	@Test
+	public void testMessagesScheduling() {
+		// the methods to be tested are relatively straight forward but want to
+		// make sure that I'm adding the messages correctly
+		ResourceScheduler scheduler = new ResourceScheduler();
+		List<Message> messages = new LinkedList<Message>();
+
+		// construct 5 anonymous Message instances just to fill the list
+		for (int i = 0; i < 5; i++) {
+			messages.add(new Message() {
+
+				@Override
+				public void completed() {
+					System.out.println("I do nothing for now");
+				}
+			});
+		}
+
+		scheduler.scheduleMessages(messages);
+		assertEquals(messages, scheduler.getMessages());
+
+		// add just one message
+		Message message = new Message() {
+
+			@Override
+			public void completed() {
+				System.out.println("I do nothing for now");
+			}
+		};
+
+		scheduler.scheduleMessage(message);
+		List<Message> scheduledMessages = scheduler.getMessages();
+		assertEquals(scheduledMessages.size() - 1, scheduledMessages.lastIndexOf(message));
 	}
 }

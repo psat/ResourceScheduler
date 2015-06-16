@@ -33,6 +33,9 @@ Should be enough for now to control resources with two counters:
 Create a test class for the ResourceScheduler, then:
 
 * test the creation of the ResourceScheduler instance with the given number of resources to be assigned.
-* test the messages being set or scheduled with the ResourceScheduler (made the skeleton of the testMessagesScheduling method but in fact wanted to finish up setting up the resources control counters - will commit later and after committing the resources stuff).
+* test the messages being set or scheduled with the ResourceScheduler (made the skeleton of the testMessagesScheduling
+method but in fact wanted to finish up setting up the resources control counters - will commit later and after
+committing the resources stuff).
 
-_Some of the methods have no javadoc associated and this is intentional, as I find that the method is quite simple and self-explanatory_
+_Some of the methods have no javadoc associated and this is intentional, as I find that the method is quite simple and self-explanatory._
+
