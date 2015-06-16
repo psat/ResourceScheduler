@@ -39,3 +39,13 @@ committing the resources stuff).
 
 _Some of the methods have no javadoc associated and this is intentional, as I find that the method is quite simple and self-explanatory._
 
+Messages seem to be rather simple objects, at least so far don't any logic specific to it, shouldn't worry about
+devising tests for it. Instead will just test that the messages are set to be scheduler with the ResourceScheduler.
+
+Create an implementation of Message interface, which gets a reference to the ResourceScheduler and a groupID string.
+The reference to the ResouceScheduler will serve to inform that a resource is free/idle.
+
+I actually do want to test the concrete implementation of Message interface, because I do not want a Message
+with a groupID, ResourceScheduler reference or content set to null.
+
+Provide test execution history for the ConcreteMessageTest class. (Should be committed with this change).
