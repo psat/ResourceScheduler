@@ -14,6 +14,6 @@ public class FIFOPriority implements Priority {
 
 	@Override
 	public Message pickNextPriorityMessage(LinkedList<Message> list) {
-		return list.pollFirst();
+		return list.pollLast();
 	}
 }
