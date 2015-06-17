@@ -46,6 +46,7 @@ public class ConcreteMessage implements Message {
 		// available
 		System.out.println("Message Completed: " + toString());
 		scheduler.putResourceIdle();
+		scheduler.applyScheduling();
 	}
 
 	public String getGroupID() {

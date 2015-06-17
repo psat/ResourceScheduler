@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
+import com.psat.exercise.prioritisation.FIFOPriority;
 import com.psat.exercise.prioritisation.Priority;
 
 /**
@@ -19,7 +20,7 @@ public class ResourceScheduler implements Gateway {
 	/**
 	 * Counter for keeping the currently assigned resources
 	 */
-	private int				assignedResources;
+	private int					assignedResources;
 
 	/**
 	 * Counter for keeping track of currently working resources, i.e, not idle
@@ -28,20 +29,20 @@ public class ResourceScheduler implements Gateway {
 	 * {@link #putResourceWorking()} and {@link #putResourceIdle()} methods to
 	 * modify this attribute.
 	 */
-	private int				workingResources;
+	private int					workingResources;
 
 	/**
 	 * List of {@link Message} objects to be scheduled for processing
 	 */
-	private List<Message>	messages;
+	private LinkedList<Message>	messages;
 
 	/**
 	 * Attribute to get random int's - to help simulate a workload for each
 	 * message
 	 */
-	private final Random	rand	= new Random();
+	private final Random		rand	= new Random();
 
-	private Priority		priority;
+	private Priority			priority;
 
 	/**
 	 * Default constructor. This will create an instance with assigned resources
@@ -117,7 +118,7 @@ public class ResourceScheduler implements Gateway {
 	}
 
 	/**
-	 * Schedule on message to be sent to the gateway to be processed by idle
+	 * Schedule the message to be sent to the gateway to be processed by idle
 	 *
 	 * @param message
 	 */
@@ -138,13 +139,13 @@ public class ResourceScheduler implements Gateway {
 		// simulate processing workload - each message should take some amount
 		// of time, slighty different from each other, hence generate values
 		// from 1 to 6
-		final int workload = rand.nextInt((6 - 1) + 1) + 1;
+		final int workload = rand.nextInt((9 - 1) + 1) + 1;
 		new Thread(new Runnable() {
 
 			@Override
 			public void run() {
 				try {
-					Thread.sleep(workload);
+					Thread.sleep(workload * 1000);
 					message.completed();
 				} catch (InterruptedException e) {
 					e.printStackTrace();
@@ -161,9 +162,80 @@ public class ResourceScheduler implements Gateway {
 		this.priority = priority;
 	}
 
-	public static void main(String[] args) {
-		// not sure if a main is needed
-		// but just in case we need to run as standalone.
+	/**
+	 * This method performs the processing work of this class, which are:\n
+	 * <ul>
+	 * <li>checking resources availability,</li>
+	 * <li>deciding which messages are sent first by applying prioritisation
+	 * (actually delegates the work to a {@link Priority} instance</li>
+	 * <li>sending the messages to the {@link Gateway} which currently is itself
+	 * </li>
+	 * </ul>
+	 */
+	public void applyScheduling() {
+		if (messages.size() == 0) {
+			System.out.println("There are no messages to process");
+			return;
+		}
+
+		if (workingResources == assignedResources) {
+			System.out.println("All resources working - Messages queued");
+
+		} else {
+			int idleResources = assignedResources - workingResources;
+			for (int i = 0; i < idleResources; i++) {
+				Message message = priority.pickNextPriorityMessage(messages);
+				if (message != null) {
+					putResourceWorking();
+					send(message);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Adds the message to the schedule and applies the scheduling processing.
+	 * <p>
+	 * Check {@link #applyScheduling()}
+	 *
+	 * @param message
+	 */
+	public void applyScheduling(Message message) {
+		scheduleMessage(message);
+		applyScheduling();
+	}
+
+	public static void main(String[] args) throws InterruptedException {
+		ResourceScheduler scheduler = new ResourceScheduler(2);
+		scheduler.setPriority(new FIFOPriority());
+		LinkedList<Message> list = new LinkedList<Message>();
+		list.push(new ConcreteMessage(scheduler, "groupID1", "msg1"));
+		list.push(new ConcreteMessage(scheduler, "groupID2", "msg1"));
+		list.push(new ConcreteMessage(scheduler, "groupID2", "msg2"));
+
+		scheduler.scheduleMessages(list);
+		scheduler.applyScheduling();
+		scheduler.applyScheduling(new ConcreteMessage(scheduler, "groupID1", "msg2"));
+		scheduler.applyScheduling(new ConcreteMessage(scheduler, "groupID1", "msg3"));
+		scheduler.applyScheduling(new ConcreteMessage(scheduler, "groupID3", "msg1"));
+		scheduler.scheduleMessage(new ConcreteMessage(scheduler, "groupID2", "msg3"));
+		scheduler.applyScheduling();
+		Thread.sleep(500);
+		scheduler.applyScheduling();
+		Thread.sleep(10000);
+
+		scheduler.applyScheduling(new ConcreteMessage(scheduler, "groupID4", "msg1"));
+		scheduler.applyScheduling(new ConcreteMessage(scheduler, "groupID3", "msg2"));
+
+		Thread.sleep(500);
+		scheduler.applyScheduling();
+		Thread.sleep(500);
+		scheduler.applyScheduling();
+
+		scheduler.applyScheduling(new ConcreteMessage(scheduler, "groupID3", "msg3"));
+		scheduler.applyScheduling(new ConcreteMessage(scheduler, "groupID4", "msg2"));
+		Thread.sleep(500);
+		scheduler.applyScheduling();
 	}
 
 }
