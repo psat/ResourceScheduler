@@ -49,3 +49,12 @@ I actually do want to test the concrete implementation of Message interface, bec
 with a groupID, ResourceScheduler reference or content set to null.
 
 Provide test execution history for the ConcreteMessageTest class. (Should be committed with this change).
+
+ResourceScheduler seems a pretty decent candidate for a GateWay
+
+__Maybe a good idea for now, not to prioritise by group and just send the messages as they are set on the list;__
+__Get the complete workflow complete - which is sending the message to the gateway when there are idle resources and__
+__getting the Message.complete() called when message finished processing.__
+
+Create the method that will be responsible for actually checking the availability of the resources and to decide if
+should send the messages through the gateway, but probably I may create a simple first in first out priority logic.

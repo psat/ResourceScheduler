@@ -122,4 +122,57 @@ public class ResourceSchedulerTest {
 		List<Message> scheduledMessages = scheduler.getMessages();
 		assertEquals(scheduledMessages.size() - 1, scheduledMessages.lastIndexOf(message));
 	}
+
+	/**
+	 * Test the flow for where the {@link ResourceScheduler} (future
+	 * implementation of {@link Gateway}) sends a message to an idle resource
+	 * and gets the
+	 * completed callback - this isn't really an actual test, but probably a
+	 * simulation of a simple, with no prioritisation nor checking for resources
+	 * availability, working flow
+	 */
+	@Test
+	public void testMessageForwardToGateWayAndMessageCompletion() {
+		final ResourceScheduler scheduler = new ResourceScheduler();
+		final Message msg = new ConcreteMessage(scheduler, "group2", "msg1");
+
+		final Gateway gateway = new Gateway() {
+
+			@Override
+			public void send(Message message) {
+				scheduler.putResourceWorking();
+				try {
+					Thread.sleep(2000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				message.completed();
+			}
+		};
+
+		// simulate processing workload
+		Thread thread = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				try {
+					Thread.sleep(2000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				gateway.send(msg);
+			}
+		});
+
+		assertEquals(0, scheduler.getWorkingResources());
+		thread.start();
+		try {
+			thread.join(2500);
+			assertEquals(1, scheduler.getWorkingResources());
+			thread.join();
+			assertEquals(0, scheduler.getWorkingResources());
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
 }
