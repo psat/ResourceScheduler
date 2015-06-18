@@ -2,8 +2,8 @@
 Project repository for Resource Scheduler exercise
 
 ## Table of Contents
-	* [Project Configuration Setup](#config_setup)
-	* [Setup](#setup)
+* [Project Configuration Setup](#config_setup)
+* [Setup](#setup)
 
 ### Project Configuration Setup <a id="config_setup"></a>
 Project was created using Eclipse Luna and tested with the Eclipse's internal JUnit plugin. 
