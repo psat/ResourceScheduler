@@ -1,10 +1,12 @@
 package com.psat.exercise;
 
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
 import com.psat.exercise.prioritisation.FIFOPriority;
+import com.psat.exercise.prioritisation.GroupPriority;
 import com.psat.exercise.prioritisation.Priority;
 
 /**
@@ -18,9 +20,19 @@ import com.psat.exercise.prioritisation.Priority;
 public class ResourceScheduler implements Gateway {
 
 	/**
+	 * Enumeration for the Group States
+	 *
+	 * @author Sérgio Teixeira
+	 * @date 17/06/2015 20:55:51
+	 */
+	public static enum GroupStatus {
+		ADDED, IN_PROGRESS, CANCELLED, TERMINATED
+	}
+
+	/**
 	 * Counter for keeping the currently assigned resources
 	 */
-	private int					assignedResources;
+	private int									assignedResources;
 
 	/**
 	 * Counter for keeping track of currently working resources, i.e, not idle
@@ -29,20 +41,25 @@ public class ResourceScheduler implements Gateway {
 	 * {@link #putResourceWorking()} and {@link #putResourceIdle()} methods to
 	 * modify this attribute.
 	 */
-	private int					workingResources;
+	private int									workingResources;
 
 	/**
 	 * List of {@link Message} objects to be scheduled for processing
 	 */
-	private LinkedList<Message>	messages;
+	private LinkedList<Message>					messages;
 
 	/**
 	 * Attribute to get random int's - to help simulate a workload for each
 	 * message
 	 */
-	private final Random		rand	= new Random();
+	private final Random						rand	= new Random();
 
-	private Priority			priority;
+	/**
+	 * Attribute to whom prioritisation will be delegated to
+	 */
+	private Priority							priority;
+
+	private LinkedHashMap<String, GroupStatus>	groups;
 
 	/**
 	 * Default constructor. This will create an instance with assigned resources
@@ -63,6 +80,7 @@ public class ResourceScheduler implements Gateway {
 		assignedResources = resources;
 		// explicitly initialise to 0
 		workingResources = 0;
+		groups = new LinkedHashMap<>();
 	}
 
 	public int getAssignedResources() {
@@ -162,6 +180,10 @@ public class ResourceScheduler implements Gateway {
 		this.priority = priority;
 	}
 
+	public LinkedHashMap<String, GroupStatus> getGroups() {
+		return groups;
+	}
+
 	/**
 	 * This method performs the processing work of this class, which are:\n
 	 * <ul>
@@ -172,7 +194,7 @@ public class ResourceScheduler implements Gateway {
 	 * </li>
 	 * </ul>
 	 */
-	public void applyScheduling() {
+	public void applyScheduling() throws Exception {
 		if (messages.size() == 0) {
 			System.out.println("There are no messages to process");
 			return;
@@ -182,13 +204,34 @@ public class ResourceScheduler implements Gateway {
 			System.out.println("All resources working - Messages queued");
 
 		} else {
+			boolean reschedule = false;
 			int idleResources = assignedResources - workingResources;
+
 			for (int i = 0; i < idleResources; i++) {
 				Message message = priority.pickNextPriorityMessage(messages);
+
 				if (message != null) {
+					String groupID = message.getGroupID();
+					GroupStatus status = groups.get(groupID);
+
+					if (GroupStatus.ADDED.equals(status)) {
+						groups.put(groupID, GroupStatus.IN_PROGRESS);
+					} else if (GroupStatus.CANCELLED.equals(status)) {
+						System.out.println("Group Cancelled - Not processing: " + message.toString());
+						reschedule = true;
+						break;
+
+					} else if (GroupStatus.TERMINATED.equals(status)) {
+						throw new Exception("Terminated Group Message received");
+					}
+
 					putResourceWorking();
 					send(message);
 				}
+			}
+
+			if (reschedule) {
+				applyScheduling();
 			}
 		}
 	}
@@ -200,12 +243,16 @@ public class ResourceScheduler implements Gateway {
 	 *
 	 * @param message
 	 */
-	public void applyScheduling(Message message) {
+	public void applyScheduling(Message message) throws Exception {
 		scheduleMessage(message);
 		applyScheduling();
 	}
 
-	public static void main(String[] args) throws InterruptedException {
+	/**
+	 * Run a simulation for Fifo Prioritisation
+	 */
+	public static void runFifo() {
+		System.out.println("Schedule FIFO Priority Execution");
 		ResourceScheduler scheduler = new ResourceScheduler(2);
 		scheduler.setPriority(new FIFOPriority());
 		LinkedList<Message> list = new LinkedList<Message>();
@@ -213,29 +260,86 @@ public class ResourceScheduler implements Gateway {
 		list.push(new ConcreteMessage(scheduler, "groupID2", "msg1"));
 		list.push(new ConcreteMessage(scheduler, "groupID2", "msg2"));
 
-		scheduler.scheduleMessages(list);
-		scheduler.applyScheduling();
-		scheduler.applyScheduling(new ConcreteMessage(scheduler, "groupID1", "msg2"));
-		scheduler.applyScheduling(new ConcreteMessage(scheduler, "groupID1", "msg3"));
-		scheduler.applyScheduling(new ConcreteMessage(scheduler, "groupID3", "msg1"));
-		scheduler.scheduleMessage(new ConcreteMessage(scheduler, "groupID2", "msg3"));
-		scheduler.applyScheduling();
-		Thread.sleep(500);
-		scheduler.applyScheduling();
-		Thread.sleep(10000);
+		try {
+			scheduler.scheduleMessages(list);
+			scheduler.applyScheduling();
 
-		scheduler.applyScheduling(new ConcreteMessage(scheduler, "groupID4", "msg1"));
-		scheduler.applyScheduling(new ConcreteMessage(scheduler, "groupID3", "msg2"));
+			scheduler.applyScheduling(new ConcreteMessage(scheduler, "groupID1", "msg2"));
+			scheduler.applyScheduling(new ConcreteMessage(scheduler, "groupID1", "msg3"));
+			scheduler.applyScheduling(new ConcreteMessage(scheduler, "groupID3", "msg1"));
+			scheduler.scheduleMessage(new ConcreteMessage(scheduler, "groupID2", "msg3"));
+			scheduler.applyScheduling();
+			Thread.sleep(500);
+			scheduler.applyScheduling();
+			Thread.sleep(10000);
 
-		Thread.sleep(500);
-		scheduler.applyScheduling();
-		Thread.sleep(500);
-		scheduler.applyScheduling();
+			scheduler.applyScheduling(new ConcreteMessage(scheduler, "groupID4", "msg1"));
+			scheduler.applyScheduling(new ConcreteMessage(scheduler, "groupID3", "msg2"));
 
-		scheduler.applyScheduling(new ConcreteMessage(scheduler, "groupID3", "msg3"));
-		scheduler.applyScheduling(new ConcreteMessage(scheduler, "groupID4", "msg2"));
-		Thread.sleep(500);
-		scheduler.applyScheduling();
+			Thread.sleep(500);
+			scheduler.applyScheduling();
+			Thread.sleep(500);
+			scheduler.applyScheduling();
+
+			scheduler.applyScheduling(new ConcreteMessage(scheduler, "groupID3", "msg3"));
+			scheduler.applyScheduling(new ConcreteMessage(scheduler, "groupID4", "msg2"));
+			Thread.sleep(500);
+			scheduler.applyScheduling();
+
+		} catch (Exception e) {
+			// this should be logged or on a GUI show a dialog of the error
+			e.printStackTrace();
+			System.out.println(e.toString());
+		}
+	}
+
+	/**
+	 * Run a simulation for Group Prioritisation
+	 */
+	public static void runGroupPriority() {
+		System.out.println("Schedule Group Priority Execution");
+
+		ResourceScheduler scheduler = new ResourceScheduler(2);
+		// create groups with state and add to a GroupPriority object
+		GroupPriority priority = new GroupPriority(scheduler.getGroups());
+		scheduler.setPriority(priority);
+
+		LinkedList<Message> list = new LinkedList<Message>();
+		try {
+			list.add(new ConcreteMessage(scheduler, "group2", "msg1"));
+			list.add(new ConcreteMessage(scheduler, "group1", "msg1"));
+			list.add(new ConcreteMessage(scheduler, "group3", "msg1"));
+			list.add(new ConcreteMessage(scheduler, "group2", "msg2"));
+			list.add(new ConcreteMessage(scheduler, "group2", "msg3"));
+			list.add(new ConcreteMessage(scheduler, "group3", "msg2"));
+			list.add(new ConcreteMessage(scheduler, "group1", "msg2"));
+
+			scheduler.scheduleMessages(list);
+			scheduler.applyScheduling();
+
+			Thread.sleep(5000);
+			scheduler.getGroups().put("group2", GroupStatus.CANCELLED);
+			scheduler.scheduleMessage(new ConcreteMessage(scheduler, "group2", "msg4"));
+			scheduler.scheduleMessage(new ConcreteMessage(scheduler, "group2", "msg5"));
+			scheduler.applyScheduling();
+
+			Thread.sleep(5000);
+			scheduler.getGroups().put("group3", GroupStatus.TERMINATED);
+			scheduler.scheduleMessage(new ConcreteMessage(scheduler, "group3", "msg3"));
+			scheduler.scheduleMessage(new ConcreteMessage(scheduler, "group1", "msg3"));
+			scheduler.scheduleMessage(new ConcreteMessage(scheduler, "group3", "msg4"));
+			scheduler.scheduleMessage(new ConcreteMessage(scheduler, "group3", "msg5"));
+			scheduler.applyScheduling();
+
+		} catch (Exception e) {
+			// this should be logged or on a GUI show a dialog of the error
+			e.printStackTrace();
+			System.out.println(e.toString());
+		}
+	}
+
+	public static void main(String[] args) throws InterruptedException {
+		runGroupPriority();
 	}
 
 }

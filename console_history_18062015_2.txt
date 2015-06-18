@@ -1,0 +1,21 @@
+Sending message: {'groupID':'group2', 'content':'msg1'}
+Sending message: {'groupID':'group2', 'content':'msg2'}
+All resources working - Messages queued
+Message Completed: {'groupID':'group2', 'content':'msg1'}
+Group Cancelled - Not processing: {'groupID':'group2', 'content':'msg3'}
+Group Cancelled - Not processing: {'groupID':'group2', 'content':'msg4'}
+Group Cancelled - Not processing: {'groupID':'group2', 'content':'msg5'}
+Sending message: {'groupID':'group1', 'content':'msg1'}
+Message Completed: {'groupID':'group1', 'content':'msg1'}
+Sending message: {'groupID':'group1', 'content':'msg2'}
+Message Completed: {'groupID':'group2', 'content':'msg2'}
+Sending message: {'groupID':'group3', 'content':'msg1'} **
+All resources working - Messages queued
+Message Completed: {'groupID':'group1', 'content':'msg2'}
+java.lang.Exception: Terminated Group Message received
+	at com.psat.exercise.ResourceScheduler.applyScheduling(ResourceScheduler.java:225)
+	at com.psat.exercise.ConcreteMessage.completed(ConcreteMessage.java:56)
+	at com.psat.exercise.ResourceScheduler$1.run(ResourceScheduler.java:167)
+	at java.lang.Thread.run(Thread.java:745)
+Message Completed: {'groupID':'group3', 'content':'msg1'} // this message was being processed while Termination was received - as seen on ** - so could not be terminated as expected.
+There are no messages to process

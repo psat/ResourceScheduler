@@ -1,5 +1,11 @@
 package com.psat.exercise;
 
+/**
+ * Concrete implementation of a Message
+ *
+ * @author Sérgio Teixeira
+ * @date 16/06/2015 23:05:00
+ */
 public class ConcreteMessage implements Message {
 
 	/**
@@ -46,9 +52,15 @@ public class ConcreteMessage implements Message {
 		// available
 		System.out.println("Message Completed: " + toString());
 		scheduler.putResourceIdle();
-		scheduler.applyScheduling();
+		try {
+			scheduler.applyScheduling();
+		} catch (Exception e) {
+			// this should be logged or on a GUI show a dialog of the error
+			e.printStackTrace();
+		}
 	}
 
+	@Override
 	public String getGroupID() {
 		return this.groupID;
 	}

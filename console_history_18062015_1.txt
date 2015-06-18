@@ -1,0 +1,15 @@
+Schedule Group Priority Execution
+Sending message: {'groupID':'group2', 'content':'msg1'}
+Sending message: {'groupID':'group2', 'content':'msg2'}
+All resources working - Messages queued
+Message Completed: {'groupID':'group2', 'content':'msg1'}
+Group Cancelled - Not processing: {'groupID':'group2', 'content':'msg3'}
+Group Cancelled - Not processing: {'groupID':'group2', 'content':'msg4'}
+Group Cancelled - Not processing: {'groupID':'group2', 'content':'msg5'}
+Sending message: {'groupID':'group1', 'content':'msg1'}
+Message Completed: {'groupID':'group2', 'content':'msg2'}
+Sending message: {'groupID':'group3', 'content':'msg1'}
+Message Completed: {'groupID':'group1', 'content':'msg1'}
+There are no messages to process
+Message Completed: {'groupID':'group3', 'content':'msg1'}
+There are no messages to process

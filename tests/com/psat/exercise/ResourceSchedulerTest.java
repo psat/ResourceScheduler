@@ -7,6 +7,10 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.psat.exercise.ResourceScheduler.GroupStatus;
+import com.psat.exercise.prioritisation.FIFOPriority;
+import com.psat.exercise.prioritisation.Priority;
+
 /**
  * Class to test {@link ResourceScheduler} class
  *
@@ -103,6 +107,12 @@ public class ResourceSchedulerTest {
 				public void completed() {
 					System.out.println("I do nothing for now");
 				}
+
+				@Override
+				public String getGroupID() {
+					return "";
+				}
+
 			});
 		}
 
@@ -115,6 +125,11 @@ public class ResourceSchedulerTest {
 			@Override
 			public void completed() {
 				System.out.println("I do nothing for now");
+			}
+
+			@Override
+			public String getGroupID() {
+				return "";
 			}
 		};
 
@@ -174,5 +189,19 @@ public class ResourceSchedulerTest {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Test(expected = Exception.class)
+	public void testGroupTermination() throws Exception {
+		ResourceScheduler scheduler = new ResourceScheduler(2);
+		// create groups with state and add to a GroupPriority object
+		Priority priority = new FIFOPriority();
+		scheduler.setPriority(priority);
+
+		LinkedList<Message> list = new LinkedList<Message>();
+		scheduler.getGroups().put("group3", GroupStatus.TERMINATED);
+		list.add(new ConcreteMessage(scheduler, "group3", "msg1"));
+		scheduler.scheduleMessages(list);
+		scheduler.applyScheduling();
 	}
 }

@@ -13,4 +13,13 @@ public interface Message {
 	 */
 	public void completed();
 
+	/**
+	 * The message's group id.
+	 * <p>
+	 * <b> Implementation should not return a <code>null</code> value</b>
+	 *
+	 * @return the groupID
+	 */
+	public String getGroupID();
+
 }

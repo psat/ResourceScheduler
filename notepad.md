@@ -58,3 +58,29 @@ __getting the Message.complete() called when message finished processing.__
 
 Create the method that will be responsible for actually checking the availability of the resources and to decide if
 should send the messages through the gateway, but probably I may create a simple first in first out priority logic.
+
+Create a class to apply group prioritisation as well as a test class.
+Should create a mapping to keep track of the message's groups an the status, in progress, added, etc, probably should add
+for begin and termination of groups.
+
+This should be the final implementation, unless termination and cancelling of messages are trivial to add.
+
+Group prioritisation works nicely. Should now integrate it with the ResourceScheduler, which should basically be associate
+the later instance object with the latest instance object.
+
+Struggling with the Termination functionality - this might not be covered on all situations - will leave as it is right now
+
+On a last refactoring, define the getGroupID() method abstract for the Message interface -
+I assume all messages must have a GroupID ID so all future implementations should have the GroupID. Could simply create an
+Abstract Class that should contain this method implemented, but leaving the completed() to be implemented. Rather do the first choice.
+
+Add some console history files. At the end was hard to devise tests with the whole flow in execution.
+
+At the end:
+
+* Cancel logic working properly.
+* Termination logic was hard to achieve, but also working properly.
+* GroupPriority working as expected - not as trivial as I expected.
+* Alternative Message Prioritisation applied with a FIFO logic.
+
+All test went well
