@@ -9,8 +9,10 @@
 	<property name="target" value="1.7" />
 	<property name="source" value="1.7" />
 	<property name="classes" value="bin" />
+	<property name="libs" value="lib" />
 	<property name="junit-reports" location="${basedir}/junit-reports" />
 	<path id="ResourceScheduler.classpath">
+		<fileset dir="libs" includes="*.jar" />
 		<pathelement location="bin" />
 	</path>
 	<target name="init">
@@ -34,21 +36,26 @@
 	<target name="build-subprojects" />
 	<target depends="init" name="build-project">
 		<echo message="${ant.project.name}: ${ant.file}" />
-		<javac debug="true" debuglevel="${debuglevel}" destdir="bin"
-			includeantruntime="false" source="${source}" target="${target}">
+		<javac debug="true"
+			debuglevel="${debuglevel}"
+			destdir="bin"
+			includeantruntime="false"
+			source="${source}"
+			target="${target}">
 			<src path="src" />
 			<src path="tests" />
 			<classpath refid="ResourceScheduler.classpath" />
 		</javac>
 	</target>
-	<target
-		description="Build all projects which reference this project. Useful to propagate changes."
-		name="build-refprojects" />
+	<target description="Build all projects which reference this project. Useful to propagate changes."
+			name="build-refprojects" />
 	<path id="test.classpath">
 		<pathelement location="${classes}" />
-		<pathelement
-			location="D:\eclipse-luna-personal\plugins\org.hamcrest.core_1.3.0.v201303031735.jar" />
+		<fileset dir="${lib}">
+			<include name="**/*.jar" />
+		</fileset>
 	</path>
+
 	<property name="test.class.name" value="com.psat.exercise.AllTests" />
 	<target name="execute-all-tests">
 		<junit fork="yes" haltonfailure="yes">

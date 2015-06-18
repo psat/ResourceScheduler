@@ -156,7 +156,7 @@ public class ResourceScheduler implements Gateway {
 		System.out.println("Sending message: " + message.toString());
 		// simulate processing workload - each message should take some amount
 		// of time, slighty different from each other, hence generate values
-		// from 1 to 6
+		// from 1 to 9
 		final int workload = rand.nextInt((9 - 1) + 1) + 1;
 		new Thread(new Runnable() {
 
