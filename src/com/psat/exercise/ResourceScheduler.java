@@ -217,6 +217,8 @@ public class ResourceScheduler implements Gateway {
 					if (GroupStatus.ADDED.equals(status)) {
 						groups.put(groupID, GroupStatus.IN_PROGRESS);
 					} else if (GroupStatus.CANCELLED.equals(status)) {
+						// want to get the next message so that the resource is
+						// not waiting - must issue scheduling
 						System.out.println("Group Cancelled - Not processing: " + message.toString());
 						reschedule = true;
 						break;
